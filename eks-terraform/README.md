@@ -21,7 +21,7 @@ Give it a review but this should create all assets required including a vpc and 
 ### Spin up Harness
 1. Create a new namespace for harness `kubectl create ns harness`
 2. Next, create a loadbalancer and default backend using our "known-good" reference: `kubectl create -f eks-terraform/loadbalancer.yaml -n harness`
-3. Retrieve the resulting address from `kubectl svc -n harness` it will look like an ALB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier.
+3. Retrieve the resulting address from `kubectl get svc -n harness` it will look like an ALB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier.
 4. Modify the following values within `src/harness/values.yaml`
 ```
 global:
