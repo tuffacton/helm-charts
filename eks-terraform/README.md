@@ -76,3 +76,6 @@ NOTES:
 6. Navigate to your alb address from step 3 in a browser and you should see a live Harness interface(you might need to skip any TLS verification for now, but these can be adjusted later easily!) 
 7. You should can make the first Harness admin user by navigating to `https://<YOUR_ELB_ADDRESS>/auth/#/signup` and filling out the resulting form.
 8. If you're provided a license later or want to make modifications to your URL/add TLS then we can run a `helm upgrade` on this release with the new values applied.
+
+### Teardown
+You can generally use a `terraform destroy` if you are done with your testing. HOWEVER, you should use a `kubectl delete -f eks-terraform/loadbalancer.yaml` otherwise you might hit this issue which makes cleanup far more difficult: https://stackoverflow.com/a/57074676
