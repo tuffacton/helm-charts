@@ -32,7 +32,14 @@
 			"target": "/usr/local/share/minikube-localhost",
 			"type": "bind"
 		}
-	]
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"hashicorp.terraform"
+			]
+		}
+	}
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

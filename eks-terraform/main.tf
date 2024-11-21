@@ -80,7 +80,7 @@ module "eks" {
       max_size     = 9
       desired_size = 7
       # ensure this aligns with the var.region
-      availability_zones = ["us-gov-west-1a", "us-gov-west-1b", "us-gov-west-1c"]
+      availability_zones = slice(data.aws_availability_zones.available.names, 0, 3)
     }
   }
 }
