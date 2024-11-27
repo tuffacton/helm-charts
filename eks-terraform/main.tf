@@ -86,9 +86,9 @@ module "eks" {
 }
 
 # https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
-# Ensure this points to the GovCloud variant if you're using that
+# Checks if this is a govcloud deployment, ensures the correct IAM policy is applied for EBS CSI driver functionality
 data "aws_iam_policy" "ebs_csi_policy" {
-  arn = "arn:aws-us-gov:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  arn = contains(["us-gov-west-1", "us-gov-east-1"], var.region) ? "arn:aws-us-gov:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy" : "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
 module "irsa-ebs-csi" {
