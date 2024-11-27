@@ -1,6 +1,6 @@
 # EKS Helper
 
-Some helpful terraform for testing SMP on EKS, first on GovCloud but will make this variable for commercial as well.
+Some helpful terraform for testing SMP on Amazon Elastic Kubernetes Service (EKS). Viable for both commercial and GovCloud flavors.
 
 Give it a review but this should create all assets required including a vpc and OIDC/IRSA roles.
 
@@ -8,42 +8,46 @@ Give it a review but this should create all assets required including a vpc and 
 - AWS CLI
 - Terraform (will add OpenTofu soon)
 - Kubernetes
+  - Kubectl
+  - Helm
+- OpenSSL
 
 ## Steps
 
 ### Terraform a new EKS cluster
-1. Check the terraform files to ensure this deployment to ensure that this cluster will be deployed to a region of your choice.
-2. Make any necessary modifications to incorporate an existing VPC of your choosing
+1. Double-check the terraform files, specifically `variables.tf` to ensure that this cluster will be deployed to a region of your choice.
+2. Make any necessary modifications to incorporate an existing VPC of your choosing, or simply the default config which will take care of it for you.
 3. Run `terraform init` then `terraform plan` to ensure this execution will run successfully.
 4. Run `terraform apply` then confirm with a `yes` when the plan looks good. This can take some time, often 15-20 mins
-5. Use the terraform output `eks_kubeconfig_command` that appears at the end of the terraform apply to connect to your cluster (hint: it will look like `"aws eks update-kubeconfig --name smp-eks-1-29-FW31Ae8W --region us-gov-west-1"`)
+5. Use the terraform output `eks_kubeconfig_command` that appears at the end of the terraform apply to connect to your cluster (hint: it will look like `"aws eks update-kubeconfig --name smp-eks-1-29-FW31Ae8W --region us-gov-west-1"`). You can always view this again with `terraform output`
 
 ### Spin up Harness
 1. Create a new namespace for harness `kubectl create ns harness`
-2. Next, create a loadbalancer and default backend using our "known-good" reference: `kubectl create -f eks-terraform/loadbalancer.yaml -n harness`
-3. Retrieve the resulting address from `kubectl get svc -n harness` it will look like an ALB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier. 
+2. Next, create a loadbalancer and default backend using our attached "known-good" reference: `kubectl create -f eks-terraform/loadbalancer.yaml -n harness`
+3. Retrieve the resulting address from `kubectl get svc -n harness` it will look like an ELB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier. 
 4. Modify the following values within `src/harness/values.yaml`. See SSL Guidance docs below if you would like to configure SSL certificate at this point.
 ```
 global:
 ...
-  loadbalancerURL: "https://a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com" # ensure this is set to https://<the alb address>
+  loadbalancerURL: "https://a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com" # ensure this is set to https://<the ELB address>
 ...  
   ingress:
     className: "harness"
     enabled: true # ensure this is set to true
     # -- add global.ingress.ingressGatewayServiceUrl in hosts if global.ingress.ingressGatewayServiceUrl is not empty.
     hosts:
-      - "a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com" # ensure this is set to the ALB address you previously retrieved
+      - "a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com" # ensure this is set to the ELB address you previously retrieved (do not add http or https)
 ...
   # -- Place the license key, Harness support team will provide these
   license:
     cg: '' # leave blank
     ng: '' # if you have a license, put that string within the quotes here
 ```
-1. After this is completed, we can apply our helm installation. Our recommendation is to utilize the `override-demo.yaml` for the resource definitions at least initially but there are other options for sizing that we can move to if needed to shrink or grow our utilization (https://developer.harness.io/docs/self-managed-enterprise-edition/reference-architecture/). The following will install our latest version of Harness SMP but we can specify a `--version` if we wish as well.
+5. After this is completed, we can apply our helm installation. Our recommendation is to utilize the `override-demo.yaml` for the resource definitions at least initially but there are other options for sizing that we can move to if needed to shrink or grow our utilization (https://developer.harness.io/docs/self-managed-enterprise-edition/reference-architecture/). The following will install our latest version of Harness SMP but we can specify a `--version` if we wish as well.
 ```
 # Retrieve helm repos
 helm repo add harness https://harness.github.io/helm-charts
+helm update
 
 # Install Harness
 helm install harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml
@@ -79,7 +83,7 @@ NOTES:
 
 
 ### SSL/TLS via Self-Signed Certificates
-One option to keep things simple is to use a self-signed certificate in place of certificates provided by your Certificate Authority tied to your DNS intended to act as the front-end of your Harness platform. These can done during initial setup or modified later once you're ready to move to production.
+One option to keep things simple for demo or POV purposes is to use a self-signed certificate in place of certificates provided by your Certificate Authority tied to your DNS intended to act as the front-end of your Harness platform. These can done during initial setup or modified later once you're ready to move to production.
 
 Generate a self-signed certificate and private key using `openssl` (this [guide](https://kubernetes.github.io/ingress-nginx/user-guide/tls/) is helpful).
 ```
@@ -122,7 +126,7 @@ Create a PEM from the previous files:
 cat ${CERT_FILE} ${KEY_FILE} > delegate-cert.pem
 ```
 
-Then use that pem to create a secret to use with your delegate:
+Then use that pem to create a secret to use with your delegate (you can add more `--from-file` to this command if you have many certificates required)
 ```
 kubectl create secret generic harness-delegate-cert -n harness-delegate-ng --from-file custom-cert1=delegate-cert.pem
 ```
@@ -144,7 +148,13 @@ helm upgrade -i helm-delegate --namespace harness-delegate-ng --create-namespace
   --set managerEndpoint=https://aeda914c9b83042d0bce15c8ec33cce2-2065664118.us-east-1.elb.amazonaws.com \
   --set delegateDockerImage=docker.io/harness/delegate:24.09.83900 \
   --set replicas=1 --set upgrader.enabled=true \
-  --set delegateCustomCa.secretName=harness-delegate-cert
+  --set delegateCustomCa.secretName=harness-delegate-cert \
+  --set upgraderCustomCa.secretName=harness-delegate-cert
 ```
+
+You should have a healthy delegate in about 2 minutes which you can validate on the Harness UI as well.
+
 ### Teardown
-You can generally use a `terraform destroy` if you are done with your testing. HOWEVER, you should use a `kubectl delete -f eks-terraform/loadbalancer.yaml` otherwise you might hit this issue which makes cleanup far more difficult: https://stackoverflow.com/a/57074676
+You should use a `kubectl delete -f eks-terraform/loadbalancer.yaml` otherwise you might hit this issue which makes cleanup far more difficult: https://stackoverflow.com/a/57074676
+
+Then, you can generally use a `terraform destroy` if you are done with your testing. 
