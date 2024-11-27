@@ -21,8 +21,8 @@ Give it a review but this should create all assets required including a vpc and 
 ### Spin up Harness
 1. Create a new namespace for harness `kubectl create ns harness`
 2. Next, create a loadbalancer and default backend using our "known-good" reference: `kubectl create -f eks-terraform/loadbalancer.yaml -n harness`
-3. Retrieve the resulting address from `kubectl get svc -n harness` it will look like an ALB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier.
-4. Modify the following values within `src/harness/values.yaml`
+3. Retrieve the resulting address from `kubectl get svc -n harness` it will look like an ALB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier. 
+4. Modify the following values within `src/harness/values.yaml`. See [SSL Guidance](#ssl) if you would like to configure SSL certificate at this point.
 ```
 global:
 ...
@@ -77,5 +77,74 @@ NOTES:
 7. You should can make the first Harness admin user by navigating to `https://<YOUR_ELB_ADDRESS>/auth/#/signup` and filling out the resulting form.
 8. If you're provided a license later or want to make modifications to your URL/add TLS then we can run a `helm upgrade` on this release with the new values applied.
 
+
+### SSL/TLS via Self-Signed Certificates {#ssl}
+One option to keep things simple is to use a self-signed certificate in place of certificates provided by your Certificate Authority tied to your DNS intended to act as the front-end of your Harness platform. These can done during initial setup or modified later once you're ready to move to production.
+
+Generate a self-signed certificate and private key using `openssl` (this [guide](https://kubernetes.github.io/ingress-nginx/user-guide/tls/) is helpful).
+```
+# Set the following variables
+KEY_FILE="tls.key" 
+CERT_FILE="tls.crt"
+HOST="aeda914c9b83042d0bce15c8ec33cce2-2065664118.us-east-1.elb.amazonaws.com" # or similar ALB generated from previous loadbalancer.yaml
+# generate the certificates
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ${KEY_FILE} -out ${CERT_FILE} \
+-subj "/O=LoadBalancer" \
+-addext "subjectAltName = DNS:${HOST}"
+```
+
+Then create the secret in the cluster
+```
+CERT_NAME="harness-cert"
+kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE}
+```
+
+Then ensure the following values are set in the `values.yaml`:
+```
+  ingress:
+    className: "harness"
+...
+    tls:
+      enabled: true
+      secretName: harness-cert # ensure this name matches your harness secret
+```
+
+Then run a helm upgrade (modify with intended additions like the `--version` if needed):
+```
+helm upgrade harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml
+```
+
+#### Delegates with Self-Signed Certs
+You can deploy a delegate with these self-signed certs as well.
+
+Create a PEM from the previous files:
+```
+cat ${CERT_FILE} ${KEY_FILE} > delegate-cert.pem
+```
+
+Then use that pem to create a secret to use with your delegate:
+```
+kubectl create secret generic harness-delegate-cert -n harness-delegate-ng --from-file custom-cert1=delegate-cert.pem
+```
+
+Use the public helm repo to add the charts for harness delegate:
+```
+helm repo add harness-delegate https://app.harness.io/storage/harness-download/delegate-helm-chart/
+helm repo update
+```
+
+You can now generally follow the guidance here to create a delegate token but instead use the self-signed certificate created earlier to onboard the delegate (https://developer.harness.io/docs/platform/get-started/tutorials/install-delegate/#install-the-default-harness-delegate) using the `--set delegateCustomCa.secretName=<SECRET_NAME>` from the previously created secret. For example:
+```
+helm upgrade -i helm-delegate --namespace harness-delegate-ng --create-namespace \
+  harness-delegate/harness-delegate-ng \
+  --set delegateName=helm-delegate \
+  --set deployMode=KUBERNETES_ONPREM \
+  --set accountId=zfGa_nKWSPaMIFvDuPNkaw \
+  --set delegateToken=YmRjNDI4YjhlMjEzYjYzOTI1NzdkZTZkMzE5OGY3YWM= \
+  --set managerEndpoint=https://aeda914c9b83042d0bce15c8ec33cce2-2065664118.us-east-1.elb.amazonaws.com \
+  --set delegateDockerImage=docker.io/harness/delegate:24.09.83900 \
+  --set replicas=1 --set upgrader.enabled=true \
+  --set delegateCustomCa.secretName=harness-delegate-cert
+```
 ### Teardown
 You can generally use a `terraform destroy` if you are done with your testing. HOWEVER, you should use a `kubectl delete -f eks-terraform/loadbalancer.yaml` otherwise you might hit this issue which makes cleanup far more difficult: https://stackoverflow.com/a/57074676
