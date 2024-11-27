@@ -22,7 +22,7 @@ Give it a review but this should create all assets required including a vpc and 
 1. Create a new namespace for harness `kubectl create ns harness`
 2. Next, create a loadbalancer and default backend using our "known-good" reference: `kubectl create -f eks-terraform/loadbalancer.yaml -n harness`
 3. Retrieve the resulting address from `kubectl get svc -n harness` it will look like an ALB address such as `a03c7375880b84b5099d042fd72b316c-952477994.us-gov-west-1.elb.amazonaws.com` but with a different identifier. 
-4. Modify the following values within `src/harness/values.yaml`. See [SSL Guidance](#ssl) if you would like to configure SSL certificate at this point.
+4. Modify the following values within `src/harness/values.yaml`. See SSL Guidance docs below if you would like to configure SSL certificate at this point.
 ```
 global:
 ...
@@ -40,7 +40,7 @@ global:
     cg: '' # leave blank
     ng: '' # if you have a license, put that string within the quotes here
 ```
-5. After this is completed, we can apply our helm installation. Our recommendation is to utilize the `override-demo.yaml` for the resource definitions at least initially but there are other options for sizing that we can move to if needed to shrink or grow our utilization (https://developer.harness.io/docs/self-managed-enterprise-edition/reference-architecture/). The following will install our latest version of Harness SMP but we can specify a `--version` if we wish as well.
+1. After this is completed, we can apply our helm installation. Our recommendation is to utilize the `override-demo.yaml` for the resource definitions at least initially but there are other options for sizing that we can move to if needed to shrink or grow our utilization (https://developer.harness.io/docs/self-managed-enterprise-edition/reference-architecture/). The following will install our latest version of Harness SMP but we can specify a `--version` if we wish as well.
 ```
 # Retrieve helm repos
 helm repo add harness https://harness.github.io/helm-charts
@@ -78,7 +78,7 @@ NOTES:
 8. If you're provided a license later or want to make modifications to your URL/add TLS then we can run a `helm upgrade` on this release with the new values applied.
 
 
-### SSL/TLS via Self-Signed Certificates {#ssl}
+### SSL/TLS via Self-Signed Certificates
 One option to keep things simple is to use a self-signed certificate in place of certificates provided by your Certificate Authority tied to your DNS intended to act as the front-end of your Harness platform. These can done during initial setup or modified later once you're ready to move to production.
 
 Generate a self-signed certificate and private key using `openssl` (this [guide](https://kubernetes.github.io/ingress-nginx/user-guide/tls/) is helpful).
