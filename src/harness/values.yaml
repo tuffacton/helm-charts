@@ -109,10 +109,10 @@ global:
   # --- Set `ingress.enabled` to `true` to create Kubernetes *Ingress* objects for Nginx.
   ingress:
     className: "harness"
-    enabled: false
+    enabled: true
     # -- add global.ingress.ingressGatewayServiceUrl in hosts if global.ingress.ingressGatewayServiceUrl is not empty.
     hosts:
-      - 'myhost.example.com'
+      - 'aeda914c9b83042d0bce15c8ec33cce2-2065664118.us-east-1.elb.amazonaws.com'
     # -- set to ingress controller's k8s service FQDN for internal routing. eg "internal-nginx.default.svc.cluster.local"
     # If not set, internal request routing would happen via global.loadbalancerUrl
     ingressGatewayServiceUrl: ""
@@ -152,7 +152,7 @@ global:
       gateways: []
       # -- add global.istio.istioGatewayServiceUrl in hosts if global.istio.istioGatewayServiceUrl is not empty.
       hosts:
-        - "myhostname.example.com"
+        - "aeda914c9b83042d0bce15c8ec33cce2-2065664118.us-east-1.elb.amazonaws.com"
   # -- set kubernetes version override, unrequired if installing using Helm.
   kubeVersion: ""
   # -- Place the license key, Harness support team will provide these
@@ -160,7 +160,7 @@ global:
     cg: ''
     ng: ''
   # -- Provide your URL for your intended load balancer
-  loadbalancerURL: https://myhostname.example.com
+  loadbalancerURL: https://aeda914c9b83042d0bce15c8ec33cce2-2065664118.us-east-1.elb.amazonaws.com
   lwd:
     autocud:
       enabled: false
