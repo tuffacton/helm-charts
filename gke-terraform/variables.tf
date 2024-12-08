@@ -22,3 +22,8 @@ variable "kubernetes_version" {
   default     = "1.30"
   description = "Kubernetes version"  
 }
+
+variable "machine_type" {
+  default     = "n1-standard-1"
+  description = "Machine type for GKE nodes"
+}
