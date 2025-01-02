@@ -209,6 +209,9 @@ global:
   ssca:
     # -- Enable to install Software Supply Chain Assurance (SSCA)
     enabled: false
+  code:
+    # -- Enable to install Harness Code (SCM)
+    enabled: false
   stackDriverLoggingEnabled: false
   sto:
     # -- Enable to install STO
@@ -246,7 +249,7 @@ ccm:
       GCP_PROJECT_ID: "placeHolder"
       S3_SYNC_CONFIG_BUCKET_NAME: "placeHolder"
       S3_SYNC_CONFIG_REGION: "placeHolder"
-    replicaCount: 2
+    replicaCount: 1
     stackDriverLoggingEnabled: false
   ce-nextgen:
     cloudProviderConfig:
