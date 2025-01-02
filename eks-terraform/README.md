@@ -100,7 +100,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ${KEY_FILE} -out ${C
 Then create the secret in the cluster
 ```
 CERT_NAME="harness-cert"
-kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE}
+kubectl create secret tls ${CERT_NAME} --key ${KEY_FILE} --cert ${CERT_FILE} -n harness
 ```
 
 Then ensure the following values are set in the `values.yaml`:
@@ -115,7 +115,7 @@ Then ensure the following values are set in the `values.yaml`:
 
 Then run a helm upgrade (modify with intended additions like the `--version` if needed):
 ```
-helm upgrade harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml -n harness
+helm upgrade harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml
 ```
 
 #### Delegates with Self-Signed Certs
