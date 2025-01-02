@@ -47,7 +47,7 @@ global:
 ```
 # Retrieve helm repos
 helm repo add harness https://harness.github.io/helm-charts
-helm update
+helm repo update
 
 # Install Harness
 helm install harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml
@@ -115,7 +115,7 @@ Then ensure the following values are set in the `values.yaml`:
 
 Then run a helm upgrade (modify with intended additions like the `--version` if needed):
 ```
-helm upgrade harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml
+helm upgrade harness harness/harness -n harness -f src/harness/override-demo.yaml -f src/harness/values.yaml -n harness
 ```
 
 #### Delegates with Self-Signed Certs
