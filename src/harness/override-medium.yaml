@@ -283,18 +283,6 @@ platform:
       requests:
         cpu: 2
         memory: 8Gi
-  migrator:
-    autoscaling:
-      enabled: false
-    java:
-      memory: "2048"
-    replicaCount: 1
-    resources:
-      limits:
-        memory: 3000Mi
-      requests:
-        cpu: 0.5
-        memory: 3000Mi
   next-gen-ui:
     autoscaling:
       enabled: false
@@ -435,3 +423,31 @@ sto:
       requests:
         cpu: 256m
         memory: 1.5Gi
+iacm:
+  iacm-manager:
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 4
+      targetCPU: 80
+      targetMemory: 80
+    java:
+      memory: "2048m"
+    replicaCount: 3
+    resources:
+      limits:
+        memory: 3Gi
+      requests:
+        cpu: 2
+        memory: 3Gi
+  iac-server: 
+    autoscaling:
+      enabled: false
+      replicaCount: 2
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 128m
+        memory: 256Mi
+

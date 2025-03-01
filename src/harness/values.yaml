@@ -38,6 +38,9 @@ global:
   # -- Enable to install Harness Code services (CODE)
   code:
     enabled: false
+    # -- Enable to install Harness Infrastructure As Code Management (IACM)
+  iacm:
+    enabled: false
   # -- provide overrides to use in-cluster database or configure to use external databases
   database:
     clickhouse:
@@ -104,9 +107,6 @@ global:
       sslEnabled: false
       ## - key within secret containing username
       userKey: "username"
-  # -- Enable to install Feature Flags (FF)
-  ff:
-    enabled: false
   # -- High availability: deploy 3 mongodb pods instead of 1. Not recommended for evaluation or POV
   ha: true
   # -- This private Docker image registry will override any registries that are defined in subcharts.
@@ -170,8 +170,6 @@ global:
   lwd:
     autocud:
       enabled: false
-    enabled: false
-  migrator:
     enabled: false
   # -- Enable SSL for MongoDB service
   mongoSSL: false
@@ -247,7 +245,7 @@ global:
       registry: docker.io
       repository: harness/helm-init-container
       pullPolicy: Always
-      tag: "1.0.0"
+      tag: "1.2.0"
       digest: ""
       imagePullSecrets: []
   fileLogging:
@@ -414,7 +412,6 @@ platform:
             size: 1Gi
     harness-secrets:
       enabled: true
-      # -- learning-engine (taints, tolerations, and so on)
     networking:
       defaultbackend:
         # -- Create will deploy a default backend into your cluster
@@ -475,7 +472,7 @@ platform:
       image:
         registry: docker.io
         repository: harness/delegate
-        tag: 24.10.84200
+        tag: 25.01.84800
         digest: ""
   # -- log-service (taints, tolerations, and so on)
   log-service:
@@ -483,11 +480,6 @@ platform:
     nodeSelector: {}
     tolerations: []
   looker:
-    affinity: {}
-    nodeSelector: {}
-    tolerations: []
-  # -- migrator (taints, tolerations, and so on)
-  migrator:
     affinity: {}
     nodeSelector: {}
     tolerations: []
@@ -544,14 +536,7 @@ srm:
     affinity: {}
     nodeSelector: {}
     tolerations: []
-  learning-engine:
-    affinity: {}
-    nodeSelector: {}
-    tolerations: []
-  verification-svc:
-    affinity: {}
-    nodeSelector: {}
-    tolerations: []
+
 # -- Config for Security Test Orchestration (STO)
 sto:
   # -- Install the STO core
@@ -584,4 +569,17 @@ ff:
   ff-pushpin-service:
     waitForInitContainer:
       image:
-        tag: 1.0.0
+        tag: 1.2.0
+iacm:
+  iac-server:
+    affinity: {}
+    autoscaling:
+      enabled: false
+    nodeSelector: {}
+    tolerations: []
+  iacm-manager:
+    affinity: {}
+    autoscaling:
+      enabled: false
+    nodeSelector: {}
+    tolerations: []

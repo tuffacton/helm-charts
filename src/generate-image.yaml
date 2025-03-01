@@ -15,13 +15,11 @@ global:
     clickhouse:
       enabled: true
   ff:
-    enabled: true
+    enabled: false
   lwd:
     autocud:
       enabled: false
     enabled: false
-  migrator:
-    enabled: true
   ng:
     enabled: true
   ngcustomdashboard:
@@ -38,11 +36,10 @@ global:
     enabled: true
   dbops:
     enabled: true
-chaos:
-  chaos-manager:
-    jobs:
-      chaos_db_upgrade:
-        enabled: true
+  code:
+    enabled: true
+iacm:
+  enabled: true
 platform:
   bootstrap:
     networking:

@@ -25,9 +25,6 @@
     dashboard-service-signed
     policy-mgmt
     curl
-    migrator-signed
-    verification-service-signed
-    learning-engine-onprem-signed
     ui-signed
     srm-ui-signed
     smp-service-discovery-server-signed
@@ -35,13 +32,13 @@
     audit-event-streaming-signed
     queue-service-signed
     service-discovery-collector
-    ubuntu
     ng-dashboard-aggregator-signed
     ingress-nginx/controller
     defaultbackend-amd64
     redis_exporter
     postgres-exporter
     mongodb-exporter
+    statsd-exporter
 
 [cdng]:
     argocd
@@ -109,13 +106,6 @@
     aqua-security-job-runner
     wiz-job-runner
 
-[ff]:
-    ff-postgres-migration-signed
-    ff-pushpin-signed
-    ff-pushpin-worker-signed
-    ff-server-signed
-    ff-timescale-migration-signed
-
 [ccm]:
     batch-processing-signed
     ce-anomaly-detection-signed
@@ -147,12 +137,10 @@
     chaos-go-runner
     k8s-chaos-infrastructure-upgrader
     smp-chaos-bg-processor-signed
-    chaos-k8s
-    litmus-checker
-    smp-chaos-db-upgrade-agent-signed
     chaos-ddcr
     chaos-machine-ifc-signed
     chaos-machine-ifs-signed
+    chaos-ddcr-faults
 
 [ssca]:
     ssca-plugin
@@ -161,6 +149,7 @@
     ssca-compliance-plugin
     ssca-manager-signed
     ssca-ui-signed
+    ssca-artifact-signing-plugin
 
 [db-devops]:
     db-devops-service-signed
@@ -170,3 +159,12 @@
     code-githa-signed
     code-gitrpc-signed
     code-search-signed
+    busybox
+
+[iacm]:
+    drone-git
+    ci-lite-engine
+    ci-addon
+    harness_terraform
+    iac-server-signed
+    iacm-manager-signed
